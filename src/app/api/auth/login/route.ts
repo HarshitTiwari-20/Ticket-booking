@@ -1,8 +1,6 @@
+import prisma from '@/lib/prisma';
 import { decryptCredentials } from '@/lib/encryption';
 import { NextRequest, NextResponse } from 'next/server';
-
-// Simulated in-memory database (will be replaced with MongoDB)
-const users: Record<string, any> = {};
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +16,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user by username
-    const user = users[username];
+    const user = await prisma.user.findUnique({
+      where: { username }
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
     let storedPassword = user.password;
     try {
       const decrypted = decryptCredentials(user.password);
-      storedPassword = decrypted;
+      if (decrypted) {
+        storedPassword = decrypted;
+      }
     } catch (e) {
       // If decryption fails, use stored password as-is
       storedPassword = user.password;

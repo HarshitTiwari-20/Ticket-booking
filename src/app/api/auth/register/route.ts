@@ -1,8 +1,6 @@
+import prisma from '@/lib/prisma';
 import { encryptCredentials } from '@/lib/encryption';
 import { NextRequest, NextResponse } from 'next/server';
-
-// Simulated in-memory database (will be replaced with MongoDB)
-const users: Record<string, any> = {};
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,13 +16,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const userExists = Object.values(users).some(
-      (u: any) => u.username === username || u.email === email
-    );
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ username }, { email }]
+      }
+    });
 
-    if (userExists) {
-      const duplicateUser = users[username];
-      const duplicateField = duplicateUser?.email === email ? 'Email' : 'Username';
+    if (existingUser) {
+      const duplicateField = existingUser.email === email ? 'Email' : 'Username';
       return NextResponse.json(
         { success: false, error: `${duplicateField} already registered` },
         { status: 400 }
@@ -34,19 +33,14 @@ export async function POST(request: NextRequest) {
     // Encrypt password before storing
     const encryptedPassword = encryptCredentials(password) || password;
 
-    // Create new user (will be persisted to MongoDB when configured)
-    const newUser = {
-      id: Date.now().toString(),
-      username,
-      email,
-      password: encryptedPassword,
-      createdAt: new Date().toISOString(),
-    };
-
-    users[username] = newUser;
-
-    // TODO: Save to MongoDB when configured
-    // const user = await prisma.user.create({...})
+    // Create new user
+    const newUser = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: encryptedPassword,
+      }
+    });
 
     return NextResponse.json(
       {
