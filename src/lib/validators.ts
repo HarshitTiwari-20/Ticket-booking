@@ -5,6 +5,16 @@ export const CredentialsSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+export const RegistrationSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must not exceed 20 characters'),
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 export const PassengerSchema = z.object({
   name: z.string().min(1, 'Passenger name is required'),
   age: z.number().int().min(1).max(120),
@@ -24,5 +34,6 @@ export const BookingSchema = z.object({
 });
 
 export type Credentials = z.infer<typeof CredentialsSchema>;
+export type Registration = z.infer<typeof RegistrationSchema>;
 export type Passenger = z.infer<typeof PassengerSchema>;
 export type BookingRequest = z.infer<typeof BookingSchema>;
