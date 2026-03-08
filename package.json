@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:push": "dotenv -e .env.local -- prisma db push",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
