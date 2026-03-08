@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useUserStore } from '@/store/user-store';
 import { ZodError } from 'zod';
 import { z } from 'zod';
+import axios from 'axios';
 
 interface SignupComponentProps {
   onSignupSuccess?: () => void;
@@ -11,6 +12,7 @@ interface SignupComponentProps {
 }
 
 const SignupSchema = z.object({
+
   username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must not exceed 20 characters'),
   email: z.string().email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -52,20 +54,14 @@ export default function SignupComponent({ onSignupSuccess, onToggleLogin }: Sign
       SignupSchema.parse(formData);
 
       // Call API to register
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await axios.post('/api/auth/register', {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Registration failed');
+      if (!response.data.success) {
+        setError(response.data.error || 'Registration failed');
         setLoading(false);
         return;
       }

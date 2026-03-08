@@ -6,6 +6,7 @@ import { useBookingStore } from '@/store/booking-store';
 import { useUserStore } from '@/store/user-store';
 import { CredentialsSchema } from '@/lib/validators';
 import { ZodError } from 'zod';
+import axios from 'axios';
 
 interface LoginComponentProps {
   onToggleSignup?: () => void;
@@ -33,16 +34,13 @@ export default function LoginComponent({ onToggleSignup }: LoginComponentProps) 
       // Check login type
       if (loginType === 'app') {
         // Validate against MongoDB
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
+        const response = await axios.post('/api/auth/login', {
+          username,
+          password,
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.error || 'Invalid username or password');
+        if (!response.data.success) {
+          setError(response.data.error || 'Invalid username or password');
           setLoading(false);
           return;
         }

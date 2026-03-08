@@ -14,7 +14,7 @@ class TatkalApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_IRCTC_API_BASE || 'https://www.irctc.co.in/nget/tatkalapi',
+      baseURL: process.env.NEXT_PUBLIC_IRCTC_API_BASE,
       timeout: API_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
